@@ -30,7 +30,7 @@ public class Chat {
     private String title;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @JoinColumn(name = "chat_id")
-    @OrderBy("createdAt DESC ")
+    @OrderBy("createdAt ASC ")
     private List<ChatEntry> history;
     @CreationTimestamp
     private LocalDate createdAt;

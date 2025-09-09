@@ -1,16 +1,15 @@
 package com.springai.demo;
 
 import com.springai.demo.repo.ChatRepository;
+import com.springai.demo.util.PostgresChatMemory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
-import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.ollama.api.OllamaOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
 
 @SpringBootApplication
 public class DemoApplication {
@@ -22,7 +21,7 @@ public class DemoApplication {
     public ChatClient chatClient(ChatClient.Builder chatClientBuilder) {
         return chatClientBuilder
                 .defaultOptions(
-                        OllamaOptions.builder().topP(0.9).topK(40).repeatPenalty(1.1).temperature(0.7).build()
+                        OllamaOptions.builder().topP(0.7).topK(20).repeatPenalty(1.1).temperature(0.3).build()
                 )
                 .defaultAdvisors(
                         getHistoryAdvisor(),
@@ -33,8 +32,7 @@ public class DemoApplication {
 
     private MessageChatMemoryAdvisor getHistoryAdvisor() {
         return MessageChatMemoryAdvisor.builder(
-//                PostgresChatMemoryRepository.builer()
-                MessageWindowChatMemory.builder()
+                PostgresChatMemory.builder()
                         .chatMemoryRepository(chatRepository)
                         .maxMessages(5)
                         .build()

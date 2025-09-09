@@ -4,7 +4,6 @@ import com.springai.demo.service.CreateChatService;
 import com.springai.demo.service.DeleteChatService;
 import com.springai.demo.service.GetAllChatService;
 import com.springai.demo.service.GetChatByIdService;
-import com.springai.demo.service.TalkToModelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -21,7 +20,6 @@ public class ChatController {
     private final GetChatByIdService getChatByIdService;
     private final CreateChatService createChatService;
     private final DeleteChatService deleteChatService;
-    private final TalkToModelService talkToModelService;
 
     @GetMapping
     public String index(ModelMap model) {
@@ -50,11 +48,5 @@ public class ChatController {
     public String deleteChat(@PathVariable("chatId") Long chatId, ModelMap model) {
         deleteChatService.execute(chatId);
         return "redirect:/";
-    }
-
-    @PostMapping("/chat/{chatId}/entry")
-    public String talkToModel(@PathVariable("chatId") Long chatId, @RequestParam String prompt) {
-        var chat = talkToModelService.execute(chatId, prompt);
-        return "redirect:/chat/" + chat.getId();
     }
 }

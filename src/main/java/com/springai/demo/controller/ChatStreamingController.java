@@ -1,6 +1,6 @@
 package com.springai.demo.controller;
 
-import com.springai.demo.service.TalkToModelService;
+import com.springai.demo.service.TalkToModelStreamingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,10 +13,10 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RequiredArgsConstructor
 public class ChatStreamingController {
 
-    private final TalkToModelService talkToModelService;
+    private final TalkToModelStreamingService talkToModelStreamingService;
 
     @GetMapping(value = "/chat-stream/{chatId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamingTalkToModel(@PathVariable("chatId") Long chatId, @RequestParam String userPrompt) {
-        return talkToModelService.executeStreaming(chatId, userPrompt);
+        return talkToModelStreamingService.execute(chatId, userPrompt);
     }
 }
