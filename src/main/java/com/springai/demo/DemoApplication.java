@@ -24,19 +24,23 @@ public class DemoApplication {
                         OllamaOptions.builder().topP(0.7).topK(20).repeatPenalty(1.1).temperature(0.3).build()
                 )
                 .defaultAdvisors(
-                        getHistoryAdvisor(),
-                        SimpleLoggerAdvisor.builder().build()
+                        getHistoryAdvisor(1),
+                        SimpleLoggerAdvisor.builder()
+                                .order(2)
+                                .build()
                 )
                 .build();
     }
 
-    private MessageChatMemoryAdvisor getHistoryAdvisor() {
+    private MessageChatMemoryAdvisor getHistoryAdvisor(int order) {
         return MessageChatMemoryAdvisor.builder(
                 PostgresChatMemory.builder()
                         .chatMemoryRepository(chatRepository)
                         .maxMessages(5)
                         .build()
-        ).build();
+        )
+                .order(order)
+                .build();
     }
 
     public static void main(String[] args) {
