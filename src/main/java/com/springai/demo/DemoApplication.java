@@ -1,17 +1,16 @@
 package com.springai.demo;
 
 import com.springai.demo.repo.ChatRepository;
-import com.springai.demo.util.PostgresChatMemory;
 import com.springai.demo.util.ExpansionQueryAdvisor;
+import com.springai.demo.util.PostgresChatMemory;
+import com.springai.demo.util.RagAdvisor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
-import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.ollama.api.OllamaOptions;
-import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -70,24 +69,20 @@ public class DemoApplication {
     }
 
     private Advisor getRagAdvisor(int order) {
-        return QuestionAnswerAdvisor.builder(vectorStore)
+        return RagAdvisor.builder(vectorStore)
                 .order(order)
-                .searchRequest(
-                        SearchRequest.builder()
-                                .similarityThreshold(0.5)
-                                .topK(4)
-                                .build()
-                )
+                .topK(4)
+                .similarity(0.63)
                 .build();
     }
 
     private MessageChatMemoryAdvisor getHistoryAdvisor(int order) {
         return MessageChatMemoryAdvisor.builder(
-                PostgresChatMemory.builder()
-                        .chatMemoryRepository(chatRepository)
-                        .maxMessages(5)
-                        .build()
-        )
+                        PostgresChatMemory.builder()
+                                .chatMemoryRepository(chatRepository)
+                                .maxMessages(5)
+                                .build()
+                )
                 .order(order)
                 .build();
     }
