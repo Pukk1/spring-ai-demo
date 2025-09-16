@@ -1,5 +1,6 @@
 package com.springai.demo.util;
 
+import com.springai.demo.BM25RerankEngine;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.ai.chat.client.ChatClientRequest;
@@ -38,8 +39,10 @@ public class RagAdvisor implements BaseAdvisor {
     public ChatClientRequest before(ChatClientRequest chatClientRequest, AdvisorChain advisorChain) {
         String originalUserQuery = chatClientRequest.prompt().getUserMessage().getText();
         String queryToRag = chatClientRequest.context().getOrDefault(EXPANSION_QUERY_ADVISOR, originalUserQuery).toString();
-        SearchRequest searchRequest = SearchRequest.builder().topK(topK).similarityThreshold(similarity).query(queryToRag).build();
+        SearchRequest searchRequest = SearchRequest.builder().topK(topK*2).similarityThreshold(similarity).query(queryToRag).build();
         var documents = vectorStore.similaritySearch(searchRequest);
+        var reranker = BM25RerankEngine.builder().build();
+        documents = reranker.rerank(documents, queryToRag, topK);
         String llmContext = documents.stream().map(Document::getText).collect(Collectors.joining(System.lineSeparator()));
         String finalUserPrompt = template.render(Map.of("context", llmContext, "question", originalUserQuery));
         return chatClientRequest.mutate().prompt(chatClientRequest.prompt().augmentUserMessage(finalUserPrompt)).build();

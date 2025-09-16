@@ -71,8 +71,8 @@ public class DemoApplication {
     private Advisor getRagAdvisor(int order) {
         return RagAdvisor.builder(vectorStore)
                 .order(order)
-                .topK(4)
-                .similarity(0.63)
+                .topK(1)
+                .similarity(0.62)
                 .build();
     }
 
