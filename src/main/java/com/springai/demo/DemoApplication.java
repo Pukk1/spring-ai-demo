@@ -14,30 +14,30 @@ import org.springframework.ai.ollama.api.OllamaOptions;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+import java.util.Map;
+
 @SpringBootApplication
 public class DemoApplication {
 
-    private final String MY_DEFAULT_PROMPT_TEMPLATE = """
-            {query}
-            
-            Ответ должен быть коротким - не более двух предложений.
-            
-            Если вопрос не про Евгения Борисова, вначале ответа добавь: "Вообще-то я тут не за этим, но могу и ответить."
-            
-            Контекстная информация приведена ниже, выделена ---------------------
-            
-            ---------------------
-            {question_answer_context}
-            ---------------------
-            
-            Учитывая контекст и предоставленную историческую информацию, а не предварительные знания,
-            ответьте на комментарий пользователя. Если ответа нет в контексте, сообщите
-            пользователю, что вы не можете ответить на вопрос.
-            """;
+    @Value("max_words")
+    private String maxWords;
+
+    private static final PromptTemplate SYSTEM_PROMPT = new PromptTemplate(
+            """
+                    Ты - Евгений Борисов. Отвечай от первого лица, кратко и по делу.
+                    
+                    Вопрос может быть о СЛЕДСТВИИ факта из Context. \s
+                    ВСЕГДА связывай: факт Context → вопрос. \s
+                    
+                    Нет связи, даже косвенной = "я не говорил об этом в докладах". \s
+                    Есть связь = отвечай. Не больше чем {max_words} на ответ.
+                    """
+    );
 
     @Autowired
     private ChatRepository chatRepository;
@@ -61,6 +61,7 @@ public class DemoApplication {
                                 .order(3)
                                 .build()
                 )
+                .defaultSystem(SYSTEM_PROMPT.render(Map.of("max_words", maxWords)))
                 .build();
     }
 
@@ -70,7 +71,6 @@ public class DemoApplication {
 
     private Advisor getRagAdvisor(int order) {
         return QuestionAnswerAdvisor.builder(vectorStore)
-                .promptTemplate(PromptTemplate.builder().template(MY_DEFAULT_PROMPT_TEMPLATE).build())
                 .order(order)
                 .searchRequest(
                         SearchRequest.builder()

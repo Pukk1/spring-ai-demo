@@ -53,14 +53,17 @@ public class ExpansionQueryAdvisor implements BaseAdvisor {
     @Override
     public ChatClientRequest before(ChatClientRequest chatClientRequest, AdvisorChain advisorChain) {
         String originalUserPrompt = chatClientRequest.prompt().getUserMessage().getText();
-        String pacedUserPrompt = chatClient.prompt()
+        String expansionQuery = chatClient.prompt()
                 .user(template.render(Map.of("question", originalUserPrompt)))
                 .call()
                 .content();
 
+        chatClientRequest.context().put("ORIGINAL_USER_PROMPT", originalUserPrompt);
+        chatClientRequest.context().put("EXPANSION_QUERY_ADVISOR", expansionQuery);
+
         return chatClientRequest.mutate()
                 .prompt(
-                        chatClientRequest.prompt().augmentUserMessage(pacedUserPrompt)
+                        chatClientRequest.prompt().augmentUserMessage(expansionQuery)
                 )
                 .build();
     }
