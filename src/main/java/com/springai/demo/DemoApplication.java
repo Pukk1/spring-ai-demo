@@ -2,11 +2,13 @@ package com.springai.demo;
 
 import com.springai.demo.repo.ChatRepository;
 import com.springai.demo.util.PostgresChatMemory;
+import com.springai.demo.util.ExpansionQueryAdvisor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.ollama.api.OllamaOptions;
 import org.springframework.ai.vectorstore.SearchRequest;
@@ -42,6 +44,8 @@ public class DemoApplication {
 
     @Autowired
     private VectorStore vectorStore;
+    @Autowired
+    private ChatModel chatModel;
 
     @Bean
     public ChatClient chatClient(ChatClient.Builder chatClientBuilder) {
@@ -50,6 +54,7 @@ public class DemoApplication {
                         OllamaOptions.builder().topP(0.7).topK(20).repeatPenalty(1.1).temperature(0.3).build()
                 )
                 .defaultAdvisors(
+                        getPaceAdvisor(0),
                         getHistoryAdvisor(1),
                         getRagAdvisor(2),
                         SimpleLoggerAdvisor.builder()
@@ -57,6 +62,10 @@ public class DemoApplication {
                                 .build()
                 )
                 .build();
+    }
+
+    private Advisor getPaceAdvisor(int order) {
+        return ExpansionQueryAdvisor.builder(chatModel).order(order).build();
     }
 
     private Advisor getRagAdvisor(int order) {
